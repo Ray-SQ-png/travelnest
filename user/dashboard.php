@@ -23,23 +23,30 @@ $reservations = $stmt->fetchAll();
 /* =========================
    SUBMIT REVIEW
 ========================= */
+$message = "";
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review'])) {
 
     $service_id = $_POST['service_id'];
     $rating = $_POST['rating'];
-    $comment = $_POST['comment'];
+    $comment = trim($_POST['comment']);
 
-    // prevent duplicate reviews per service
+    // prevent duplicate reviews
     $check = $pdo->prepare("
         SELECT id FROM reviews 
         WHERE user_id = ? AND service_id = ?
     ");
-    $check->execute([$_SESSION['user_id'], $service_id]);
+
+    $check->execute([
+        $_SESSION['user_id'],
+        $service_id
+    ]);
 
     if ($check->rowCount() == 0) {
 
         $stmt = $pdo->prepare("
-            INSERT INTO reviews (user_id, service_id, rating, comment)
+            INSERT INTO reviews 
+            (user_id, service_id, rating, comment)
             VALUES (?, ?, ?, ?)
         ");
 
@@ -50,46 +57,99 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review'])) {
             $comment
         ]);
 
-        echo "<div class='card'>Review submitted ⭐</div>";
+        $message = "
+            <div class='alert alert-success'>
+                Review submitted successfully ⭐
+            </div>
+        ";
+
     } else {
-        echo "<div class='card'>You already reviewed this service</div>";
+
+        $message = "
+            <div class='alert alert-error'>
+                You already reviewed this service ❌
+            </div>
+        ";
     }
 }
 ?>
 
 <h2>Your Reservations</h2>
 
+<?= $message ?>
+
 <?php foreach ($reservations as $r): ?>
+
     <div class="card">
+
         <h3><?= htmlspecialchars($r['titre']) ?></h3>
 
-        <p><?= $r['date_debut'] ?> → <?= $r['date_fin'] ?></p>
-        <p><strong><?= $r['montant_total'] ?> €</strong></p>
-        <p>Status: <?= $r['status'] ?></p>
+        <p>
+            <?= $r['date_debut'] ?> → <?= $r['date_fin'] ?>
+        </p>
+
+        <p>
+            <strong><?= $r['montant_total'] ?> €</strong>
+        </p>
+
+        <p>
+            Status: <?= ucfirst($r['status']) ?>
+        </p>
 
         <?php if ($r['status'] === 'pending'): ?>
-            <a class="btn" href="pay.php?id=<?= $r['id'] ?>">Pay Now</a>
+
+            <a class="btn" href="pay.php?id=<?= $r['id'] ?>">
+                Pay Now
+            </a>
+
         <?php else: ?>
 
             <!-- REVIEW FORM -->
             <form method="POST">
-                <input type="hidden" name="service_id" value="<?= $r['service_id'] ?>">
 
-                <select name="rating" required>
-                    <option value="5">⭐⭐⭐⭐⭐</option>
-                    <option value="4">⭐⭐⭐⭐</option>
-                    <option value="3">⭐⭐⭐</option>
-                    <option value="2">⭐⭐</option>
-                    <option value="1">⭐</option>
-                </select>
+                <input 
+                    type="hidden" 
+                    name="service_id" 
+                    value="<?= $r['service_id'] ?>"
+                >
 
-                <input name="comment" placeholder="Write review..." required>
+                <!-- STAR RATING -->
+                <div class="star-rating">
 
-                <button class="btn" name="review">Submit Review</button>
+                    <input type="radio" id="star5<?= $r['id'] ?>" name="rating" value="5" required>
+                    <label for="star5<?= $r['id'] ?>">★</label>
+
+                    <input type="radio" id="star4<?= $r['id'] ?>" name="rating" value="4">
+                    <label for="star4<?= $r['id'] ?>">★</label>
+
+                    <input type="radio" id="star3<?= $r['id'] ?>" name="rating" value="3">
+                    <label for="star3<?= $r['id'] ?>">★</label>
+
+                    <input type="radio" id="star2<?= $r['id'] ?>" name="rating" value="2">
+                    <label for="star2<?= $r['id'] ?>">★</label>
+
+                    <input type="radio" id="star1<?= $r['id'] ?>" name="rating" value="1">
+                    <label for="star1<?= $r['id'] ?>">★</label>
+
+                </div>
+
+                <input 
+                    type="text"
+                    name="comment"
+                    placeholder="Write your review..."
+                    required
+                >
+
+                <button class="btn" name="review">
+                    Submit Review
+                </button>
+
             </form>
 
         <?php endif; ?>
+
     </div>
+
 <?php endforeach; ?>
 
 <?php require_once '../includes/footer.php'; ?>

@@ -143,3 +143,38 @@ body.dark .alert-success {
     background: #14532d;
     color: #bbf7d0;
 }
+
+/* STAR RATING */
+.star-rating {
+    direction: rtl;
+    display: inline-flex;
+    gap: 5px;
+}
+
+.star-rating input {
+    display: none;
+}
+
+.star-rating label {
+    font-size: 32px;
+    color: #777;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input:checked ~ label {
+    color: gold;
+}
+
+/* DARK MODE */
+body.dark .star-rating label {
+    color: #aaa;
+}
+
+body.dark .star-rating label:hover,
+body.dark .star-rating label:hover ~ label,
+body.dark .star-rating input:checked ~ label {
+    color: gold;
+}
