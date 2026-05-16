@@ -1,0 +1,4 @@
+/includes/db.php
+/assets/uploads/*
+/vendor/
+.env
