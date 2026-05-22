@@ -74,9 +74,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review'])) {
 }
 ?>
 
-<h2>Your Reservations</h2>
+<h1>📊 Your Dashboard</h1>
+<p style="color:#6b7280;">Manage your bookings and reviews</p>
 
 <?= $message ?>
+
+<?php if (count($reservations) > 0): ?>
+
+<div class="grid">
 
 <?php foreach ($reservations as $r): ?>
 
@@ -85,26 +90,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review'])) {
         <h3><?= htmlspecialchars($r['titre']) ?></h3>
 
         <p>
-            <?= $r['date_debut'] ?> → <?= $r['date_fin'] ?>
+            📅 <?= $r['date_debut'] ?> → <?= $r['date_fin'] ?>
         </p>
 
         <p>
-            <strong><?= $r['montant_total'] ?> €</strong>
+            <span class="badge badge-success">
+                <?= $r['montant_total'] ?> €
+            </span>
         </p>
 
         <p>
-            Status: <?= ucfirst($r['status']) ?>
+            <?php if ($r['status'] === 'paid'): ?>
+                <span class="badge badge-success">Paid</span>
+            <?php elseif ($r['status'] === 'pending'): ?>
+                <span class="badge badge-warning">Pending</span>
+            <?php else: ?>
+                <span class="badge badge-danger">
+                    <?= ucfirst($r['status']) ?>
+                </span>
+            <?php endif; ?>
         </p>
 
         <?php if ($r['status'] === 'pending'): ?>
 
-            <a class="btn" href="pay.php?id=<?= $r['id'] ?>">
-                Pay Now
+            <a class="btn"
+               href="pay.php?id=<?= $r['id'] ?>"
+               style="width:100%; text-align:center;">
+                💳 Pay Now
             </a>
 
         <?php else: ?>
 
-            <!-- REVIEW FORM -->
+            <hr style="margin:20px 0; border:none; border-top:1px solid #e5e7eb;">
+
+            <h4>⭐ Leave a Review</h4>
+
             <form method="POST">
 
                 <input 
@@ -140,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review'])) {
                     required
                 >
 
-                <button class="btn" name="review">
+                <button class="btn" name="review" style="width:100%;">
                     Submit Review
                 </button>
 
@@ -151,5 +171,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review'])) {
     </div>
 
 <?php endforeach; ?>
+
+</div>
+
+<?php else: ?>
+
+<div class="card" style="text-align:center;">
+    <h3>🧳 No reservations yet</h3>
+    <p>Explore our services and make your first booking.</p>
+
+    <a href="services.php" class="btn">
+        🌍 Explore Services
+    </a>
+</div>
+
+<?php endif; ?>
 
 <?php require_once '../includes/footer.php'; ?>
